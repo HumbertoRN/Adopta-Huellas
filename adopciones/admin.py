@@ -31,3 +31,21 @@ class PetAdmin(admin.ModelAdmin):
     list_display = ('name', 'species', 'breed', 'shelter', 'adoption_status', 'created_at')
     list_filter = ('species', 'adoption_status', 'gender', 'size', 'shelter')
     search_fields = ('name',)
+
+# ADOPTION_REQUEST
+from .models import AdoptionRequest
+
+@admin.register(AdoptionRequest)
+class AdoptionRequestAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'pet', 'status', 'request_date')
+    list_filter = ('status', 'request_date')
+    search_fields = ('user__username', 'pet__name')
+
+# ADOPTION
+from .models import Adoption
+
+@admin.register(Adoption)
+class AdoptionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'request', 'adoption_date')
+    list_filter = ('adoption_date',)
+    search_fields = ('request__user__username', 'request__pet__name')
