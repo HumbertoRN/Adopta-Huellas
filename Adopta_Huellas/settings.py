@@ -14,7 +14,13 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+LANGUAGE_CODE = 'es-mx'
+TIME_ZONE = 'America/Tijuana'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'home'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/

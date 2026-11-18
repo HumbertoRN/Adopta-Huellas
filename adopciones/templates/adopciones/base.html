@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Adopta Huellas{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { guinda: { DEFAULT: '#7A1131', dark: '#5E0D26', light: '#F6E9ED' }, dorado: '#C9A227' },
+      fontFamily: { titulo: ['Montserrat', 'sans-serif'], sans: ['Inter', 'sans-serif'] }
+    } } }
+  </script>
+</head>
+<body class="bg-[#F7F7F8] text-slate-800 font-sans antialiased">
+
+<nav class="sticky top-0 z-50 bg-guinda text-white shadow">
+  <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+    <a href="{% url 'home' %}" class="font-titulo font-extrabold text-xl tracking-tight">🐾 Adopta Huellas</a>
+
+    <div class="hidden md:flex items-center gap-8 font-titulo font-bold text-sm">
+      <a href="{% url 'home' %}#catalogo" class="hover:text-dorado">Adopción</a>
+      <a href="{% url 'home' %}#servicios" class="hover:text-dorado">Servicios</a>
+      <a href="{% url 'home' %}#como-funciona" class="hover:text-dorado">Cómo funciona</a>
+      <a href="#contacto" class="hover:text-dorado">Contacto</a>
+    </div>
+
+    <div class="flex items-center gap-2 text-sm">
+      {% if user.is_authenticated %}
+        {% if user.role == 'SHELTER_ADMIN' %}
+          <a href="{% url 'dashboard' %}" class="px-4 py-2 rounded-md border border-white/40 hover:bg-white/10">Dashboard</a>
+        {% endif %}
+        <span class="hidden md:inline px-2">Hola, {{ user.username }}</span>
+        <a href="{% url 'logout' %}" class="px-4 py-2 rounded-md bg-white text-guinda font-bold">Salir</a>
+      {% else %}
+        <a href="{% url 'login' %}" class="px-4 py-2 rounded-md border border-white/40 hover:bg-white/10">Iniciar Sesión</a>
+        <a href="{% url 'register' %}" class="px-4 py-2 rounded-md bg-white text-guinda font-bold">Registrarse</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+{% if messages %}
+  <div class="max-w-7xl mx-auto px-6 mt-4 space-y-2">
+    {% for message in messages %}
+      <div class="rounded-lg bg-guinda-light text-guinda px-4 py-3 text-sm font-medium">{{ message }}</div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer id="contacto" class="bg-guinda-dark text-white/80 mt-20">
+  <div class="max-w-7xl mx-auto px-6 py-10 grid md:grid-cols-3 gap-6 text-sm">
+    <div><p class="font-titulo font-extrabold text-white text-lg">Adopta Huellas</p>
+         <p class="mt-2">Padrón de adopción de animales rescatados.</p></div>
+    <div><p class="font-bold text-white">Contacto</p>
+         <p class="mt-2">Tijuana, Baja California</p><p>contacto@adoptahuellas.mx</p></div>
+    <div><p class="font-bold text-white">Aviso de privacidad</p>
+         <p class="mt-2">Tus datos solo se usan para el proceso de adopción.</p></div>
+  </div>
+</footer>
+</body>
+</html>
