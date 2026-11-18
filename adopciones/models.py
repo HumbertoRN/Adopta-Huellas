@@ -72,7 +72,6 @@ class Pet(models.Model):
     def __str__(self):
         return self.name
 
-
 # ADOPTION_REQUEST
 
 class AdoptionRequest(models.Model):
@@ -119,3 +118,19 @@ class Adoption(models.Model):
 
     def __str__(self):
         return f"Adopción de {self.request.pet.name}"
+
+# FAVORITE
+
+class Favorite(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favorites')
+    pet = models.ForeignKey('Pet', on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'pet'], name='unique_favorite'),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.pet.name}"

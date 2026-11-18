@@ -49,3 +49,11 @@ class AdoptionAdmin(admin.ModelAdmin):
     list_display = ('id', 'request', 'adoption_date')
     list_filter = ('adoption_date',)
     search_fields = ('request__user__username', 'request__pet__name')
+
+# FAVORITE
+from .models import Favorite
+
+@admin.register(Favorite)
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = ('user', 'pet', 'created_at')
+    search_fields = ('user__username', 'pet__name')
