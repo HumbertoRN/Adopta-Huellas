@@ -134,3 +134,25 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.pet.name}"
+
+# PET_IMAGE
+
+class PetImage(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    pet = models.ForeignKey('Pet', on_delete=models.CASCADE, related_name='images')
+    image_url = models.TextField()
+    is_primary = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            # Solo una imagen principal por mascota
+            models.UniqueConstraint(
+                fields=['pet'],
+                condition=Q(is_primary=True),
+                name='unique_primary_image_per_pet',
+            ),
+        ]
+
+    def __str__(self):
+        return f"Imagen de {self.pet.name}"

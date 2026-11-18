@@ -57,3 +57,12 @@ from .models import Favorite
 class FavoriteAdmin(admin.ModelAdmin):
     list_display = ('user', 'pet', 'created_at')
     search_fields = ('user__username', 'pet__name')
+
+# PET_IMAGE
+from .models import PetImage
+
+@admin.register(PetImage)
+class PetImageAdmin(admin.ModelAdmin):
+    list_display = ('pet', 'is_primary', 'created_at')
+    list_filter = ('is_primary',)
+    search_fields = ('pet__name',)
