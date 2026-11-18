@@ -71,3 +71,51 @@ class Pet(models.Model):
 
     def __str__(self):
         return self.name
+
+
+# ADOPTION_REQUEST
+
+class AdoptionRequest(models.Model):
+    STATUS_CHOICES = [
+        ('PENDING', 'Pendiente'),
+        ('APPROVED', 'Aprobado'),
+        ('REJECTED', 'Rechazado'),
+        ('CANCELLED', 'Cancelado'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='adoption_requests')
+    pet = models.ForeignKey('Pet', on_delete=models.CASCADE, related_name='adoption_requests')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    message = models.TextField(blank=True, null=True)
+    request_date = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            # Solo una solicitud aprobada por mascota
+            models.UniqueConstraint(
+                fields=['pet'],
+                condition=Q(status='APPROVED'),
+                name='unique_approved_request_per_pet',
+            ),
+        ]
+
+    def __str__(self):
+        return f"Solicitud de {self.user.username} por {self.pet.name} - {self.get_status_display()}"
+
+# ADOPTION
+
+class Adoption(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    request = models.OneToOneField(
+        'AdoptionRequest',
+        on_delete=models.CASCADE,
+        related_name='adoption',
+        limit_choices_to={'status': 'APPROVED'},
+    )
+    adoption_date = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Adopción de {self.request.pet.name}"
