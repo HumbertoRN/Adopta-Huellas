@@ -24,14 +24,18 @@ class ShelterAdmin(admin.ModelAdmin):
     search_fields = ('name', 'address')
 
 # PET
-from .models import Pet
+from .models import Pet, PetImage
+
+class PetImageInline(admin.TabularInline):
+    model = PetImage
+    extra = 1
 
 @admin.register(Pet)
 class PetAdmin(admin.ModelAdmin):
     list_display = ('name', 'species', 'breed', 'shelter', 'adoption_status', 'created_at')
     list_filter = ('species', 'adoption_status', 'gender', 'size', 'shelter')
     search_fields = ('name',)
-
+    inlines = [PetImageInline]
 # ADOPTION_REQUEST
 from .models import AdoptionRequest
 

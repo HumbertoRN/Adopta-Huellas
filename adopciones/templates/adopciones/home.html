@@ -47,7 +47,7 @@
             <div class="aspect-[4/3] bg-guinda-light flex items-center justify-center">
                 {% with image=pet.images.first %}
                     {% if image %}
-                        <img src="{{ image.image_url }}" alt="{{ pet.name }}" class="w-full h-full object-cover">
+                        <img src="{{ image.image.url }}" alt="{{ pet.name }}" class="w-full h-full object-cover">
                     {% else %}
                         <span class="text-6xl">🐾</span>
                     {% endif %}

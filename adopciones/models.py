@@ -140,7 +140,7 @@ class Favorite(models.Model):
 class PetImage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     pet = models.ForeignKey('Pet', on_delete=models.CASCADE, related_name='images')
-    image_url = models.TextField()
+    image = models.ImageField(upload_to='pets/')
     is_primary = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
