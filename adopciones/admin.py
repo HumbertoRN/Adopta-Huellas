@@ -66,3 +66,20 @@ class PetImageAdmin(admin.ModelAdmin):
     list_display = ('pet', 'is_primary', 'created_at')
     list_filter = ('is_primary',)
     search_fields = ('pet__name',)
+
+# SPECIES
+from .models import Species
+
+@admin.register(Species)
+class SpeciesAdmin(admin.ModelAdmin):
+    list_display = ('name', 'id')
+    search_fields = ('name',)
+
+# BREED
+from .models import Breed
+
+@admin.register(Breed)
+class BreedAdmin(admin.ModelAdmin):
+    list_display = ('name', 'species', 'id')
+    list_filter = ('species',)
+    search_fields = ('name',)

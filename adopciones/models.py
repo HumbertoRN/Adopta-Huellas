@@ -156,3 +156,30 @@ class PetImage(models.Model):
 
     def __str__(self):
         return f"Imagen de {self.pet.name}"
+
+# SPECIES
+
+class Species(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        verbose_name_plural = 'Species'
+
+    def __str__(self):
+        return self.name
+
+# BREED
+
+class Breed(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    species = models.ForeignKey('Species', on_delete=models.CASCADE, related_name='breeds')
+    name = models.CharField(max_length=100)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['species', 'name'], name='unique_breed_per_species'),
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.species.name})"
