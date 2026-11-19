@@ -1,18 +1,74 @@
-from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import HttpResponseForbidden
-from django.shortcuts import get_object_or_404, redirect, render
+from .forms import RegisterForm
+from .models import Pet, Species
+from .models import AdoptionRequest
 
-from .forms import PetForm, RegisterForm
-from .models import Pet
+# =========================
+# 🏠 Catálogo de mascotas
+# =========================
+def home(request):
 
+    query = request.GET.get('q')
+    species_id = request.GET.get('species')
 
-def es_refugio(user):
-    return user.role == 'SHELTER_ADMIN' and user.shelter_id is not None
+    pets = Pet.objects.select_related(
+        'shelter', 'species', 'breed'
+    ).filter(
+        adoption_status='AVAILABLE'
+    ).order_by('-created_at')
+
+    # =========================
+    # 🔎 Busqueda
+    # =========================
+    if query:
+        pets = pets.filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query)
+        )
+
+    # =========================
+    # 🐾 Filtro especie
+    # =========================
+    if species_id:
+        pets = pets.filter(
+            species__id=species_id
+        )
+
+    # =========================
+    # 📄 Paginacion
+    # =========================
+    paginator = Paginator(pets, 6)
+
+    page_number = request.GET.get('page')
+
+    page_obj = paginator.get_page(page_number)
+
+    species = Species.objects.all()
+
+    return render(request, 'adopciones/home.html', {
+        'page_obj': page_obj,
+        'species': species,
+    })
 
 
 # =========================
-# 👤 PERSONA 1 — Cuentas
+# 🐶 Detalle de mascota
+# =========================
+def pet_detail(request, pk):
+    pet = get_object_or_404(Pet, pk=pk)
+
+    return render(request, 'adopciones/pet_detail.html', {
+        'pet': pet
+    })
+
+
+# =========================
+# 👤 Registro
 # =========================
 def register(request):
     if request.method == 'POST':
@@ -23,86 +79,70 @@ def register(request):
             return redirect('home')
     else:
         form = RegisterForm()
+
     return render(request, 'adopciones/register.html', {'form': form})
 
 
+# =========================
+# 🔑 Login
+# =========================
 def login_view(request):
+    error = None
+
     if request.method == 'POST':
-        user = authenticate(request,
-                            username=request.POST.get('username'),
-                            password=request.POST.get('password'))
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=username, password=password)
+
         if user:
             login(request, user)
-            return redirect('home')
-    return render(request, 'adopciones/login.html')
+            return redirect(request.GET.get('next') or 'home')
+
+        error = 'Usuario o contraseña incorrectos'
+
+    return render(request, 'adopciones/login.html', {'error': error})
 
 
+# =========================
+# 🚪 Logout
+# =========================
 def logout_view(request):
     logout(request)
     return redirect('home')
 
-# =========================
-# CATÁLOGO
-# =========================
-def home(request):
-    pets = Pet.objects.filter(adoption_status='AVAILABLE').order_by('-created_at')
-    return render(request, 'adopciones/home.html', {'pets': pets})
-
 
 # =========================
-# FICHA DE MASCOTA
-# =========================
-def pet_detail(request, pk):
-    pet = get_object_or_404(Pet, pk=pk)
-    es_favorito = (
-        request.user.is_authenticated
-        and Favorite.objects.filter(user=request.user, pet=pet).exists()
-    )
-    return render(request, 'adopciones/pet_detail.html', {'pet': pet, 'es_favorito': es_favorito})
-
-
-# =========================
-# SOLICITUDES DE ADOPCIÓN
+# 📊 Dashboard (solo refugios)
 # =========================
 @login_required
-def request_create(request, pk):
-    pet = get_object_or_404(Pet, pk=pk, adoption_status='AVAILABLE')
-    if request.method == 'POST':
-        AdoptionRequest.objects.create(
-            user=request.user,
-            pet=pet,
-            message=request.POST.get('message', ''),
-        )
-        return redirect('my_requests')
-    return render(request, 'adopciones/request_form.html', {'pet': pet})
+def dashboard(request):
+    if request.user.role != 'SHELTER_ADMIN' or not request.user.shelter:
+        return HttpResponseForbidden("Solo administradores de refugio")
+
+    pets = Pet.objects.filter(
+        shelter=request.user.shelter
+    ).select_related('species', 'breed')
+
+    requests = AdoptionRequest.objects.filter(
+        pet__shelter=request.user.shelter
+    ).select_related('user', 'pet').order_by('-request_date')
+
+    return render(request, 'adopciones/dashboard.html', {
+        'pets': pets,
+        'requests': requests
+    })
 
 
+# =========================
+# 📋 Mis solicitudes
+# =========================
 @login_required
 def my_requests(request):
-    solicitudes = AdoptionRequest.objects.filter(user=request.user).select_related('pet').order_by('-request_date')
-    return render(request, 'adopciones/my_requests.html', {'solicitudes': solicitudes})
+    requests = AdoptionRequest.objects.filter(
+        user=request.user
+    ).select_related('pet').order_by('-request_date')
 
-
-# =========================
-# FAVORITOS
-# =========================
-@login_required
-def favorite_list(request):
-    favoritos = Favorite.objects.filter(user=request.user).select_related('pet').order_by('-created_at')
-    return render(request, 'adopciones/favorite_list.html', {'favoritos': favoritos})
-
-
-@login_required
-def favorite_toggle(request, pk):
-    pet = get_object_or_404(Pet, pk=pk)
-    favorito, creado = Favorite.objects.get_or_create(user=request.user, pet=pet)
-    if not creado:
-        favorito.delete()
-    return redirect('pet_detail', pk=pet.pk)
-
-
-# =========================
-# PÁGINAS
-# =========================
-def privacy_notice(request):
-    return render(request, 'adopciones/privacy_notice.html')
+    return render(request, 'adopciones/my_requests.html', {
+        'requests': requests
+    })
