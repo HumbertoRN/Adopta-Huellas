@@ -1,0 +1,51 @@
+{% extends 'adopciones/base.html' %}
+
+{% block title %}{{ pet.name }} | Adopta Huellas{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-10">
+
+    <a href="{% url 'home' %}" class="text-sm text-guinda font-semibold hover:underline">&larr; Volver al catálogo</a>
+
+    <div class="mt-6 grid md:grid-cols-2 gap-8 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+        <!-- Imagen -->
+        <div class="aspect-square bg-guinda-light flex items-center justify-center">
+            {% with image=pet.images.first %}
+                {% if image %}
+                    <img src="{{ image.image_url }}" alt="{{ pet.name }}" class="w-full h-full object-cover">
+                {% else %}
+                    <span class="text-8xl">🐾</span>
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Datos -->
+        <div class="p-8">
+            <h1 class="font-titulo font-extrabold text-4xl text-slate-800">{{ pet.name }}</h1>
+            <p class="mt-1 text-slate-500">{{ pet.shelter.name }}</p>
+
+            <!-- Tabla de datos de la mascota -->
+            <table class="mt-6 w-full text-sm">
+                <tbody class="divide-y divide-slate-100">
+                    <tr><td class="py-2 font-semibold text-slate-500">Especie</td><td class="py-2">{{ pet.species.name }}</td></tr>
+                    <tr><td class="py-2 font-semibold text-slate-500">Raza</td><td class="py-2">{{ pet.breed.name|default:'Sin raza definida' }}</td></tr>
+                    <tr><td class="py-2 font-semibold text-slate-500">Edad</td><td class="py-2">{{ pet.age }} meses</td></tr>
+                    <tr><td class="py-2 font-semibold text-slate-500">Sexo</td><td class="py-2">{{ pet.get_gender_display }}</td></tr>
+                    <tr><td class="py-2 font-semibold text-slate-500">Tamaño</td><td class="py-2">{{ pet.get_size_display }}</td></tr>
+                    <tr><td class="py-2 font-semibold text-slate-500">Salud</td><td class="py-2">{{ pet.health_status|default:'Sin información' }}</td></tr>
+                    <tr><td class="py-2 font-semibold text-slate-500">Estado</td><td class="py-2">{{ pet.get_adoption_status_display }}</td></tr>
+                </tbody>
+            </table>
+
+            <p class="mt-6 text-slate-600 leading-relaxed">{{ pet.description|default:'' }}</p>
+
+            <div class="mt-6 text-sm text-slate-500">
+                <p class="font-semibold text-slate-700">Contacto del refugio</p>
+                <p>{{ pet.shelter.address }}</p>
+                <p>{{ pet.shelter.phone|default:'' }} {{ pet.shelter.email|default:'' }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
